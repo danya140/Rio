@@ -11,13 +11,17 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Sql Xml REQUIRED)
 
 add_executable(Rio
   main.cpp
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
+  parser.cpp
+  parser.h
+  book.cpp
+  book.h
 )
 
-target_link_libraries(Rio PRIVATE Qt5::Widgets)
+target_link_libraries(Rio PRIVATE Qt5::Widgets Qt5::Sql Qt5::Xml)
