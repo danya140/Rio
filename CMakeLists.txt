@@ -22,6 +22,8 @@ add_executable(Rio
   parser.h
   book.cpp
   book.h
+  exporter.cpp
+  exporter.h
 )
 
 target_link_libraries(Rio PRIVATE Qt5::Widgets Qt5::Sql Qt5::Xml)

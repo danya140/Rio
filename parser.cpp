@@ -1,10 +1,8 @@
 #include "parser.h"
 
 
-Parser::Parser(QSqlQuery& query)
+Parser::Parser()
 {
-    this->query = query;
-
     books = new QList<Book>();
 }
 
@@ -31,11 +29,12 @@ void Parser::parseFolder(QStringList& fileNames, QString& path){
                         books->append(parseBook(xml));
                 }
             }
+        file->close();
     }
 
-};
+}
 
-QList<Book> Parser::getXmlConf(){
+QList<Book> Parser::getBooksList(){
     return *books;
 }
 
@@ -62,6 +61,6 @@ Book Parser::parseBook(QXmlStreamReader& xml){
 
             xml.readNext();
     }
-        return  *book;
+    return  *book;
 };
 

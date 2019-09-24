@@ -11,13 +11,12 @@
 class Parser
 {
 public:
-    Parser(QSqlQuery& query);
+    Parser();
     void parseFolder(QStringList& fileNames, QString& path);
-    QList<Book> getXmlConf();
+    QList<Book> getBooksList();
 
 private:
     QList<Book>* books;
-    QSqlQuery query;
 
     Book parseBook(QXmlStreamReader& xml);
 
