@@ -1,12 +1,20 @@
 #include "parser.h"
 
 
-Parser::Parser()
+Parser::Parser(QStringList fileNames, QString path, QObject *parent): QObject(parent)
 {
+    qRegisterMetaType<QList<Book>>("QList<Book>");
+    this->fileNames = fileNames;
+    this->path = path;
     books = new QList<Book>();
 }
 
-void Parser::parseFolder(QStringList& fileNames, QString& path){
+void Parser::run(){
+    parseFolder();
+    emit(finished(getBooksList()));
+}
+
+void Parser::parseFolder(){
     for(QString filePath : fileNames){
         QFile* file = new QFile(path+"/"+filePath);
 
@@ -63,4 +71,8 @@ Book Parser::parseBook(QXmlStreamReader& xml){
     }
     return  *book;
 };
+
+void Parser::setRunning(bool running){
+    isRunning = running;
+}
 

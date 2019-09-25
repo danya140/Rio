@@ -19,6 +19,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void insertBooks(QList<Book> books);
+
 private slots:
     void on_importFile_clicked();
     void on_clearTable_clicked();
@@ -32,6 +35,8 @@ private:
     QSqlDatabase m_db;
     QSqlTableModel* model;
     QSqlQuery* query;
+    Parser* parser;
+    QThread thread_1;
 
     void afterImportUpdate(QList<Book> books);
     void createTable();

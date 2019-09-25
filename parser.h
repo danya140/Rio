@@ -8,15 +8,30 @@
 
 
 
-class Parser
+class Parser : public QObject
 {
+    Q_OBJECT
+
+
+signals:
+    void finished(QList<Book> books);
+
 public:
-    Parser();
-    void parseFolder(QStringList& fileNames, QString& path);
+    Parser(QStringList fileNames, QString path, QObject *parent=0);
+    void parseFolder();
     QList<Book> getBooksList();
+    bool running();
+
+public slots:
+    void run();
+    void setRunning(bool running);
+
 
 private:
     QList<Book>* books;
+    bool isRunning;
+    QStringList fileNames;
+    QString path;
 
     Book parseBook(QXmlStreamReader& xml);
 

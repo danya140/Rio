@@ -62,22 +62,34 @@ void MainWindow::insert(QString title = "", QString author = "", int isbn= 0){
     query->exec(qry);
 }
 
+void MainWindow::insertBooks(QList<Book> books){
+    delete parser;
+    for(Book book : books)
+    {
+        insert(book.getTitle(), book.getAuthor(), book.getIsbn());
+    }
+
+    model->select();
+}
+
 
 
 void MainWindow::on_importFile_clicked()
 {
     QDir dir = QFileDialog::getExistingDirectory(this, "Выбор файла", "C://");
     QStringList files = dir.entryList(QStringList()<<"*.xml"<<"*.XML", QDir::Files);
-    Parser* parser = new Parser();
     QString path = dir.path();
-    parser->parseFolder(files, path);
 
-    for(Book book : parser->getBooksList())
-    {
-        insert(book.getTitle(), book.getAuthor(), book.getIsbn());
-    }
+    parser = new Parser(files, path);
 
-    model->select();
+    connect(&thread_1, &QThread::started, parser, &Parser::run);
+    connect(parser, &Parser::finished, &thread_1, &QThread::terminate);
+    connect(parser, SIGNAL(finished(QList<Book>)), this, SLOT(insertBooks(QList<Book>)));
+
+    parser->moveToThread(&thread_1);
+
+    parser->setRunning(true);
+    thread_1.start();
 }
 
 
