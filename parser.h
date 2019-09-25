@@ -14,12 +14,12 @@ class Parser : public QObject
 
 
 signals:
-    void finished(QList<Book> books);
+    void finished(QList<Book> books, QStringList errors);
+    void onProgress(int value);
 
 public:
     Parser(QStringList fileNames, QString path, QObject *parent=0);
     void parseFolder();
-    QList<Book> getBooksList();
     bool running();
 
 public slots:
@@ -32,6 +32,7 @@ private:
     bool isRunning;
     QStringList fileNames;
     QString path;
+    QStringList errors;
 
     Book parseBook(QXmlStreamReader& xml);
 

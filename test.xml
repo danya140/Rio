@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Catalog>
+	<Book>
+		<Title>Война и мир</Title>
+		<Author>Лев Николаевич Толстой</Author>
+		<ISBN>148734</ISBN>
+	</Book>
+	<Book>
+		<Title>Братья Карамазовы</Title>
+		<Author>Фёдор Достоевский</Author>
+		<ISBN>125876</ISBN>
+	</Book>
+</Catalog>

@@ -11,7 +11,7 @@ Parser::Parser(QStringList fileNames, QString path, QObject *parent): QObject(pa
 
 void Parser::run(){
     parseFolder();
-    emit(finished(getBooksList()));
+    emit(finished(*books, errors));
 }
 
 void Parser::parseFolder(){
@@ -19,7 +19,7 @@ void Parser::parseFolder(){
         QFile* file = new QFile(path+"/"+filePath);
 
         if(!file->open(QIODevice::ReadOnly)){
-            qDebug("Can't open file");
+            errors.append("Не получилось открыть файл:" + path + "/" + filePath);
         }
 
         QXmlStreamReader xml(file);
@@ -29,30 +29,32 @@ void Parser::parseFolder(){
                 QXmlStreamReader::TokenType token = xml.readNext();
                 if (token == QXmlStreamReader::StartDocument)
                     continue;
-                if (token == QXmlStreamReader::StartElement)
+                if (token == QXmlStreamReader::StartElement && xml.name() == "Book")
                 {
-                    if (xml.name() == "Catalog")
-                        continue;
-                    if (xml.name() == "Book")
-                        books->append(parseBook(xml));
+                    try {
+                    books->append(parseBook(xml));
+                    } catch (QException) {
+                    errors.append("Ошибка чтения в файле: " + path + "/" + filePath
+                                  +" на строке: "+QString::number(xml.lineNumber()-1));
+                    }
                 }
             }
+        onProgress(fileNames.indexOf(filePath));
         file->close();
     }
 
-}
-
-QList<Book> Parser::getBooksList(){
-    return *books;
 }
 
 Book Parser::parseBook(QXmlStreamReader& xml){
     Book* book = new Book();
     xml.readNext();
 
+
     while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name() == "Book"))
     {
-
+        if(xml.hasError()){
+            throw QException();
+        }
         if (xml.tokenType() == QXmlStreamReader::StartElement)
             {
                 if (xml.name() == "Title"){
@@ -66,7 +68,6 @@ Book Parser::parseBook(QXmlStreamReader& xml){
                     book->setIsbn(xml.text().toString().toInt());
                 }
             }
-
             xml.readNext();
     }
     return  *book;

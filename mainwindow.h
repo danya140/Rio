@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QtSql>
 #include <QFileDialog>
+#include <QProgressDialog>
+#include <QMessageBox>
 #include "parser.h"
 #include "book.h"
 #include "exporter.h"
@@ -20,7 +22,9 @@ public:
     ~MainWindow();
 
 public slots:
-    void insertBooks(QList<Book> books);
+    void insertBooks(QList<Book> books, QStringList errors);
+
+    void onPorgress(int value);
 
 private slots:
     void on_importFile_clicked();
@@ -36,7 +40,8 @@ private:
     QSqlTableModel* model;
     QSqlQuery* query;
     Parser* parser;
-    QThread thread_1;
+    QThread parserThread;
+    QProgressDialog* progress;
 
     void afterImportUpdate(QList<Book> books);
     void createTable();

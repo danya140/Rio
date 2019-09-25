@@ -62,13 +62,27 @@ void MainWindow::insert(QString title = "", QString author = "", int isbn= 0){
     query->exec(qry);
 }
 
-void MainWindow::insertBooks(QList<Book> books){
+void MainWindow::insertBooks(QList<Book> books, QStringList errors){
     delete parser;
+
+    if(errors.size()>0){
+        QMessageBox box;
+        QString text = "Ошибки:";
+
+        for(QString error : errors){
+            text.append("\n");
+            text.append(error);
+        }
+        box.setText(text);
+        box.exec();
+
+    }
+
     for(Book book : books)
     {
         insert(book.getTitle(), book.getAuthor(), book.getIsbn());
     }
-
+    progress->close();
     model->select();
 }
 
@@ -82,14 +96,17 @@ void MainWindow::on_importFile_clicked()
 
     parser = new Parser(files, path);
 
-    connect(&thread_1, &QThread::started, parser, &Parser::run);
-    connect(parser, &Parser::finished, &thread_1, &QThread::terminate);
-    connect(parser, SIGNAL(finished(QList<Book>)), this, SLOT(insertBooks(QList<Book>)));
+    connect(&parserThread, &QThread::started, parser, &Parser::run);
+    connect(parser, &Parser::finished, &parserThread, &QThread::terminate);
+    connect(parser, SIGNAL(finished(QList<Book>, QStringList)), this, SLOT(insertBooks(QList<Book>, QStringList)));
+    connect(parser, SIGNAL(onProgress(int)), this, SLOT(onPorgress(int)));
 
-    parser->moveToThread(&thread_1);
+    parser->moveToThread(&parserThread);
 
     parser->setRunning(true);
-    thread_1.start();
+    parserThread.start();
+    progress = new QProgressDialog("Импорт файлов", 0, 0, files.size());
+    progress->exec();
 }
 
 
@@ -169,4 +186,8 @@ void MainWindow::exportToXml(){
     }
     Exporter exporter;
     exporter.exportToXml(books, dir.path());
+}
+
+void MainWindow::onPorgress(int value){
+    progress->setValue(value);
 }
