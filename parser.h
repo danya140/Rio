@@ -12,31 +12,27 @@ class Parser : public QObject
 {
     Q_OBJECT
 
-
 signals:
     void finished(QList<Book> books, QStringList errors);
     void onProgress(int value);
 
 public:
     Parser(QStringList fileNames, QString path, QObject *parent=0);
+
     void parseFolder();
-    bool running();
 
 public slots:
     void run();
     void setRunning(bool running);
 
-
 private:
     QList<Book>* books;
-    bool isRunning;
     QStringList fileNames;
-    QString path;
     QStringList errors;
+    QString path;
+    bool isRunning;
 
     Book parseBook(QXmlStreamReader& xml);
-
-
 };
 
 

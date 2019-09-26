@@ -1,6 +1,11 @@
 #include "parser.h"
 
-
+/**
+ * @brief Parser::Parser
+ * @param fileNames список файлов для парсинга
+ * @param path путь до папки с файлами
+ * @param parent родитель
+ */
 Parser::Parser(QStringList fileNames, QString path, QObject *parent): QObject(parent)
 {
     qRegisterMetaType<QList<Book>>("QList<Book>");
@@ -14,6 +19,12 @@ void Parser::run(){
     emit(finished(*books, errors));
 }
 
+/**
+ * @brief Parser::parseFolder
+ *
+ * Основа парсера.
+ * Производит парсинг по корню
+ */
 void Parser::parseFolder(){
     for(QString filePath : fileNames){
         QFile* file = new QFile(path+"/"+filePath);
@@ -23,7 +34,6 @@ void Parser::parseFolder(){
         }
 
         QXmlStreamReader xml(file);
-
         while (!xml.atEnd() && !xml.hasError())
             {
                 QXmlStreamReader::TokenType token = xml.readNext();
@@ -34,8 +44,8 @@ void Parser::parseFolder(){
                     try {
                     books->append(parseBook(xml));
                     } catch (QException) {
-                    errors.append("Ошибка чтения в файле: " + path + "/" + filePath
-                                  +" на строке: "+QString::number(xml.lineNumber()-1));
+                    errors.append("Ошибка чтения файла: " + path + "/" + filePath
+                                  +" строка: "+QString::number(xml.lineNumber()-1));
                     }
                 }
             }
@@ -45,10 +55,16 @@ void Parser::parseFolder(){
 
 }
 
+/**
+ * @brief Parser::parseBook
+ * @param xml xml ридер
+ * @return распарсеная книга при удачном
+ *
+ * Парсинг книги
+ */
 Book Parser::parseBook(QXmlStreamReader& xml){
     Book* book = new Book();
     xml.readNext();
-
 
     while (!(xml.tokenType() == QXmlStreamReader::EndElement && xml.name() == "Book"))
     {

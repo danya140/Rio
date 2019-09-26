@@ -8,8 +8,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     QTableView* tableView = ui->tableView;
     tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(tableView,SIGNAL(customContextMenuRequested(QPoint)), SLOT(slotCustomMenuRequested(QPoint)));
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
@@ -26,9 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
     model->select();
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
     tableView->setModel(model);
-    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-
 }
 
 MainWindow::~MainWindow()
@@ -51,7 +50,15 @@ void MainWindow::dropTable(){
     query->exec("DROP TABLE IF EXISTS Book;");
 }
 
-void MainWindow::insert(QString title = "", QString author = "", int isbn= 0){
+/**
+ * @brief MainWindow::insert
+ * @param title название книги
+ * @param author автор
+ * @param isbn уникальный номер
+ *
+ * Вставка книги в бд
+ */
+void MainWindow::insert(QString title = "", QString author = "", int isbn = 0){
     query->clear();
     QString qry = QString("INSERT INTO Book(Title, Author, ISBN) "
                           "VALUES('%1', '%2', %3);")
@@ -62,6 +69,13 @@ void MainWindow::insert(QString title = "", QString author = "", int isbn= 0){
     query->exec(qry);
 }
 
+/**
+ * @brief MainWindow::insertBooks
+ * @param books список книг для добавления в таблицу
+ * @param errors список ошибок, которые произошли при импорте
+ *
+ * Вставка импортированных данных из xml в бд
+ */
 void MainWindow::insertBooks(QList<Book> books, QStringList errors){
     delete parser;
 
@@ -75,7 +89,6 @@ void MainWindow::insertBooks(QList<Book> books, QStringList errors){
         }
         box.setText(text);
         box.exec();
-
     }
 
     for(Book book : books)
@@ -102,7 +115,6 @@ void MainWindow::on_importFile_clicked()
     connect(parser, SIGNAL(onProgress(int)), this, SLOT(onPorgress(int)));
 
     parser->moveToThread(&parserThread);
-
     parser->setRunning(true);
     parserThread.start();
     progress = new QProgressDialog("Импорт файлов", 0, 0, files.size());
@@ -117,6 +129,12 @@ void MainWindow::on_clearTable_clicked()
     model->select();
 }
 
+/**
+ * @brief MainWindow::slotCustomMenuRequested
+ * @param pos расположение клика ПКМ
+ *
+ * Формирование и вывод контекстного меню
+ */
 void MainWindow::slotCustomMenuRequested(QPoint pos){
     QMenu* menu = new QMenu(this);
 
@@ -142,12 +160,14 @@ void MainWindow::addRow(){
 void MainWindow::removeRow(){
     QItemSelectionModel* select = ui->tableView->selectionModel();
     QString selectedRowsId;
+
     for(QModelIndex index : select->selectedRows()){
         selectedRowsId.append(QString::number(index.data().toInt()));
         if(index != select->selectedRows().last()){
             selectedRowsId.append(",");
         }
     }
+
     query->clear();
     QString qry = QString("DELETE FROM Book WHERE id in (%1);")
             .arg(selectedRowsId);
@@ -155,12 +175,17 @@ void MainWindow::removeRow(){
     model->select();
 }
 
+/**
+ * @brief MainWindow::exportToXml
+ *
+ * Запуск экспорта в xml выбранных строк
+ */
 void MainWindow::exportToXml(){
     QFileDialog saveDialog(this,"Выбор файла");
     saveDialog.setDefaultSuffix(".xml");
     saveDialog.exec();
-    QDir dir(saveDialog.selectedFiles().first());
 
+    QDir dir(saveDialog.selectedFiles().first());
     QItemSelectionModel* select = ui->tableView->selectionModel();
     QList<Book> books;
 
@@ -168,7 +193,6 @@ void MainWindow::exportToXml(){
         Book* book = new Book();
 
         for(int i=1; i<model->rowCount(); i++){
-
             QVariant cell = model->index(index.row(),i).data();
             QString column = model->record().fieldName(i);
 
@@ -178,9 +202,7 @@ void MainWindow::exportToXml(){
                 book->setAuthor(cell.toString());
             } else if (column == "ISBN"){
                 book->setIsbn(cell.toInt());
-
             }
-
         }
         books.append(*book);
     }

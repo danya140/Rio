@@ -5,10 +5,17 @@ Exporter::Exporter()
 
 }
 
+/**
+ * @brief Exporter::exportToXml
+ * @param books список книг для экспорта
+ * @param path путь вместе с именем файла в
+ * который будет произведен экспорт
+ *
+ * Эксопрт в хml
+ */
 void Exporter::exportToXml(QList<Book> books, QString path){
     QFile file(path);
     file.open(QIODevice::WriteOnly);
-
     QXmlStreamWriter xmlWriter(&file);
 
     xmlWriter.setAutoFormatting(true);
@@ -35,6 +42,5 @@ void Exporter::exportToXml(QList<Book> books, QString path){
 
     xmlWriter.writeEndElement();
     xmlWriter.writeEndDocument();
-
     file.close();
 }
